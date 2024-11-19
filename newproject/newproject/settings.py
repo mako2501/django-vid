@@ -28,6 +28,19 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+
+# endpointy ktore beda pomijane przez middleware - 
+SKIP_AUTHENTICATION_PATHS = [
+    '/api/simulate-login/',
+]
+# adres api do weryfikacji tokena - endpoint SPRINGA
+SPRING_API_VERIFY_URL = "http://localhost:8080/api/verify-token/"
+
+# parametry dla jwt - kodowanie
+JWT_SECRET_KEY = "tajny_kod_dzilimy_go_z_api_Spring"
+JWT_ALGORITHM= "HS256"
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -49,8 +62,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'api.middleware.JWTAuthenticationMiddleware' #moj middleware
+    #'api.middleware.JWTAuthenticationMiddleware', #moj middleware
+    'api.middleware.jwt_authentication.JWTAuthenticationMiddleware' #probny z abstrakcyjnej
 ]
+
 
 ROOT_URLCONF = 'newproject.urls'
 

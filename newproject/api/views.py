@@ -4,19 +4,21 @@ from rest_framework import status
 from .serializer import NoteSerializer
 from .models import Note
 from django.http import JsonResponse
-#jwt
 from datetime import datetime, timedelta
 import jwt
+from django.conf import settings
 
 #f. view jako arg. otrzymuje request a zwraca response
 @api_view(['POST'])
 def create_note(request):
-    if not hasattr(request, 'user_id'):
+    #if not hasattr(request, 'user_id'):
+    if not hasattr(request, 'user_data') or 'user_id' not in request.user_data:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
     
     # kopia by moc nadpisac `user_id`
     data = request.data.copy()
-    data['user_id'] = request.user_id
+    #data['user_id'] = request.user_id
+    data['user_id'] = request.user_data.get('user_id')
 
     serializer = NoteSerializer(data=data)
     if serializer.is_valid():
@@ -31,8 +33,13 @@ def note_detail(request, pk):
     except Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    #czy dane usera sa dostepne
+    if not hasattr(request, 'user_data') or 'user_id' not in request.user_data:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
     # czy użytkownik jest właścicielem notatki
-    if note.user_id != request.user_id:
+    #if note.user_id != request.user_id:
+    if note.user_id != request.user_data.get('user_id'):    
         return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
     
     if request.method == 'GET':
@@ -44,7 +51,7 @@ def note_detail(request, pk):
         #przygotowanie danych do aktualizacji
         data = request.data.copy()
         #dodanie user id przed zapisaniem - serializer wymaga tego pola a ja go nie rpzysylam
-        data['user_id'] = note.user_id
+        data['user_id'] = note.user_id        
 
         # aktualizacja danych notatki
         serializer = NoteSerializer(note, data=data)
@@ -59,7 +66,8 @@ def note_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 def notes_list(request):
-    if not hasattr(request, 'user_id'):
+    #if not hasattr(request, 'user_id'):
+    if not hasattr(request, 'user_data') or 'user_id' not in request.user_data:
         return JsonResponse({'error': 'Unauthorized'}, status=401)
     
     notes = Note.objects.all().values('title', 'content','user_id')
@@ -67,20 +75,25 @@ def notes_list(request):
     return JsonResponse(list(notes), safe=False)
     
 
-#widok do tworzenia tokena jwt symuloujacego logowanie - zwraca id usera
-#csrf_exempt - jednak nie potrzeba
+#widok do tworzenia tokena jwt symuloujacego logowanie - zwraca token
 def simulate_login(request):
     # jakis id
     user_id = 2
 
+    # pozostałe dane usera - nie musza byc ustawiane
+    #permissions = []
+    roles = [] # - najwyzej bedzie pusta lista
+    
     # tworzenie payload tokenuJWT
     payload = {
         "user_id": user_id,
+        #"permissions": permissions,
+        "roles": roles,  
         "exp": datetime.utcnow() + timedelta(minutes=60),  # czas waznosci
         "iat": datetime.utcnow()
     }
 
     # generowanie tokneu JWT
-    token = jwt.encode(payload, "tajny_kod_dzilimy_go_z_api_Spring", algorithm="HS256")
+    token = jwt.encode(payload, getattr(settings, "JWT_SECRET_KEY", None), algorithm=getattr(settings, "JWT_ALGORITHM", "HS256"))
 
     return JsonResponse({"access_token": token})
