@@ -1,8 +1,5 @@
-#from django.db import models
+from django.db import models
 
-#teraz modele sa w w module models
-
-'''
 class Note(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
@@ -12,4 +9,3 @@ class Note(models.Model):
 
     def __str__(self):
         return self.title
-'''

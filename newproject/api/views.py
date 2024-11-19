@@ -2,7 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .serializer import NoteSerializer
-from .models import Note
+#from .models import Note
+from .models.note import Note
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 import jwt
