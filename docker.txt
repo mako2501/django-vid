@@ -1,8 +1,0 @@
-docker jakies pierdoły z kursu
-- wszystko w jednej paczce, obraz
-- kontener jest samoweystarczlny, odizolowany od innych kontenerow, ale moze sie znimi komunikowac
-- Image - obraz jak klasa, Kontener - jak obiekt - instancja Obrazu
-- Obrazy definiuje sie za pliku Dockerfile
-- kontenery uruchamia sie na hoście w Docker engine (docker deamon)
-
-- 
