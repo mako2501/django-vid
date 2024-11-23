@@ -1,3 +1,7 @@
+''''
+#stary views z .api - można usunać
+#widoki sa w views
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -98,3 +102,4 @@ def simulate_login(request):
     token = jwt.encode(payload, getattr(settings, "JWT_SECRET_KEY", None), algorithm=getattr(settings, "JWT_ALGORITHM", "HS256"))
 
     return JsonResponse({"access_token": token})
+'''

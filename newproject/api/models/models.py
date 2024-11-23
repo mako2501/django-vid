@@ -1,5 +1,6 @@
 #from django.db import models
 
+# stary model z .api - można usunąć
 #teraz modele sa w w module models
 
 '''
