@@ -1,7 +1,7 @@
-import jwt
 import requests
 from .base_authentication import BaseAuthenticationMiddleware
-from django.conf import settings 
+from django.conf import settings
+import jwt
 
 class JWTAuthenticationMiddleware(BaseAuthenticationMiddleware):
     def should_skip(self, request):
@@ -19,25 +19,23 @@ class JWTAuthenticationMiddleware(BaseAuthenticationMiddleware):
         headers = {'Authorization': f'Bearer {token}'}
         try:
             response = requests.get(getattr(settings, 'SPRING_API_VERIFY_URL', None), headers=headers)
-            if response.status_code == 200:
-                # Bearer jkds.hdshf.edtye54fg
-                return response.json().get("Authorization", "").split(" ")[1]
-        except requests.RequestException:
-            return None
-        return None
 
+            if response.status_code == 200:
+
+                #userid w jwt w body           
+                return response.json().get("jwt_user_id")
+            
+        except requests.RequestException as e:
+            return None
+    
     def decode_token(self, token):        
         try:
             decoded = jwt.decode(token, getattr(settings, "JWT_SECRET_KEY", None), algorithms=[getattr(settings, "JWT_ALGORITHM", "HS256")])
 
-            return {
-                'user_id': decoded.get('user_id'),
-                'permissions': decoded.get('permissions', []), # jesli nie ma domyslnie ustaw []
-                'roles': decoded.get('roles', [])             
-            }
+            return decoded.get('user_id')                
 
-            #return decoded.get('user_id')
         except jwt.ExpiredSignatureError:
             return None
         except jwt.InvalidTokenError:
             return None
+    

@@ -16,18 +16,18 @@ class BaseAuthenticationMiddleware(ABC):
         if not token:
             return JsonResponse({'error': 'Token not provided'}, status=401)
         
-        # weryfikacja tokenu
-        verified_token = self.forward_token_to_api(token)
-        if not verified_token:
-            return JsonResponse({'error': 'Token is not valid in API'}, status=401)
-
-        # odszyfruj token, zwraca jakies dane usera
-        user_data = self.decode_token(verified_token)
-        if not user_data:
-            return JsonResponse({'error': 'Token decoding failed'}, status=401)
-
+        # weryfikacja tokenu oraz pobranie hasha user id
+        token_with_user_id = self.forward_token_to_api(token)
+        
+        if not token_with_user_id:
+            return JsonResponse({'error': 'Invalid response from Spring API'}, status=502) #czy moze inny kod
+                      
+        user_id = self.decode_token(token_with_user_id)
+        
         #dodaj dane usera do requesta
-        request.user_data = user_data
+        request.user_id = user_id
+
+        print(f"Odszyfrowany user_id: {user_id}")  # spr id po odszyfr.
 
         # kontynuacja przetwarzania - w request znajduje się user_id
         return self.get_response(request)
@@ -44,10 +44,10 @@ class BaseAuthenticationMiddleware(ABC):
 
     @abstractmethod
     def forward_token_to_api(self, token):
-        """wwysyla token do api w celu jego spradzenia, zwraca token"""
+        """wwysyla token do api w celu jego spradzenia, zwraca zaszyfrowany user_id"""
         pass
 
     @abstractmethod
     def decode_token(self, token):
-        """dekoduje token, ma zwracac odkodowany payload"""
+        """odszyfruwuje user_id, ma zwracac user_id"""
         pass

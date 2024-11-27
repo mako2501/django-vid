@@ -37,7 +37,7 @@ SKIP_AUTHENTICATION_PATHS = [
 SPRING_API_VERIFY_URL = "http://localhost:8080/api/verify-token/"
 
 # parametry dla jwt - kodowanie
-JWT_SECRET_KEY = "tajny_kod_dzilimy_go_z_api_Spring"
+JWT_SECRET_KEY = "tajny_kod_dzilimy_go_z_api_Spring" #uzywany do symulacji logowania
 JWT_ALGORITHM= "HS256"
 
 
