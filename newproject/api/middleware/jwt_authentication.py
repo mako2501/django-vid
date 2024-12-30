@@ -1,3 +1,10 @@
+"""
+Author: 14798
+Desc: Middlweare odpowiedzialny za uwierzytelnianie requestów poprzez tokeny JWT, 
+weryfikuje token z nagłówka->komunikuje się z API
+Spring (waliduje token), dekoduje zwrócony token do id użytkownika
+"""
+
 import requests
 from .base_authentication import BaseAuthenticationMiddleware
 from django.conf import settings
@@ -31,7 +38,7 @@ class JWTAuthenticationMiddleware(BaseAuthenticationMiddleware):
                 response.json(),
                 status=response.status_code      
         )
-                    
+
         except requests.RequestException as e:
             return None
     

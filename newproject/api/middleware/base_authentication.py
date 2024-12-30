@@ -1,8 +1,12 @@
-from abc import ABC, abstractmethod
-from django.http import JsonResponse
+"""
+Author: 14798
+Desc: Klasa abstrakcyjna dla middleware pośredniczacego w komuniakcji miedzy frontem, a serwerem Spring
+"""
 
-#klasa abstrakcyjna dla middleware
-class BaseAuthenticationMiddleware(ABC):
+from django.http import JsonResponse
+from .middleware_interface import AuthenticationInterface
+
+class BaseAuthenticationMiddleware(AuthenticationInterface):
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -18,12 +22,13 @@ class BaseAuthenticationMiddleware(ABC):
         
         # weryfikajca tokenu + pobranie hasha user id
         token_with_user_id = self.forward_token_to_api(token)
+
+        if not token_with_user_id:
+            return JsonResponse({'error': 'Invalid response from Spring API'}, status=502) #czy moze inny kod
+        
         #jesli to nie token a jsonresp=api spring zwrocil blad
         if isinstance(token_with_user_id, JsonResponse):
             return token_with_user_id
-        
-        if not token_with_user_id:
-            return JsonResponse({'error': 'Invalid response from Spring API'}, status=502) #czy moze inny kod
 
         try:              
             user_id = self.decode_token(token_with_user_id)
@@ -40,22 +45,4 @@ class BaseAuthenticationMiddleware(ABC):
         # kontynuacja przetwarzania - w request znajduje się user_id
         return self.get_response(request)
 
-    @abstractmethod
-    def should_skip(self, request):
-        """spr. czy middleware ma przetwarzać request, zwraca T/F"""
-        pass
 
-    @abstractmethod
-    def get_token_from_request(self, request):
-        """pobiera token z requestu, zwraca token"""
-        pass
-
-    @abstractmethod
-    def forward_token_to_api(self, token):
-        """wwysyla token do api w celu jego spradzenia, zwraca zaszyfrowany user_id"""
-        pass
-
-    @abstractmethod
-    def decode_token(self, token):
-        """odszyfruwuje user_id, ma zwracac user_id"""
-        pass
