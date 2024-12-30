@@ -40,7 +40,7 @@ def note_detail(request, pk):
     # czy użytkownik jest właścicielem notatki
     #print(f"request.user_id: {request.user_id}, note.user_id: {note.user_id}")
 
-    if int(note.user_id) != int(request.user_id):
+    if int(note.user_id) != request.user_id:
         return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN) # to nie wlasciciel
     
     if request.method == 'GET':

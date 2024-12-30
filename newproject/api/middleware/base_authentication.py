@@ -16,13 +16,21 @@ class BaseAuthenticationMiddleware(ABC):
         if not token:
             return JsonResponse({'error': 'Token not provided'}, status=401)
         
-        # weryfikacja tokenu oraz pobranie hasha user id
+        # weryfikajca tokenu + pobranie hasha user id
         token_with_user_id = self.forward_token_to_api(token)
+        #jesli to nie token a jsonresp=api spring zwrocil blad
+        if isinstance(token_with_user_id, JsonResponse):
+            return token_with_user_id
         
         if not token_with_user_id:
             return JsonResponse({'error': 'Invalid response from Spring API'}, status=502) #czy moze inny kod
-                      
-        user_id = self.decode_token(token_with_user_id)
+
+        try:              
+            user_id = self.decode_token(token_with_user_id)
+            if user_id is None:
+                return JsonResponse({'error':'Unauthorized'}, status=401)
+        except ValueError as e:
+            return JsonResponse({'error':str(e)}, status=400)
         
         #dodaj dane usera do requesta
         request.user_id = user_id

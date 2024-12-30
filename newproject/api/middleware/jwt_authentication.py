@@ -1,6 +1,7 @@
 import requests
 from .base_authentication import BaseAuthenticationMiddleware
 from django.conf import settings
+from django.http import JsonResponse
 import jwt
 
 class JWTAuthenticationMiddleware(BaseAuthenticationMiddleware):
@@ -25,14 +26,23 @@ class JWTAuthenticationMiddleware(BaseAuthenticationMiddleware):
                 #userid w jwt w body           
                 return response.json().get("jwt_user_id")
             
+            #przekazanie bleduze Springa !=200
+            return JsonResponse(
+                response.json(),
+                status=response.status_code      
+        )
+                    
         except requests.RequestException as e:
             return None
     
     def decode_token(self, token):        
         try:
             decoded = jwt.decode(token, getattr(settings, "JWT_SECRET_KEY", None), algorithms=[getattr(settings, "JWT_ALGORITHM", "HS256")])
-
-            return decoded.get('user_id')                
+            user_id = decoded.get('user_id')
+            if not user_id or not str(user_id).isdigit(): #id musi byc int, inaczej wyjatek
+                raise ValueError("Invalid user ID")
+            
+            return int(user_id)      
 
         except jwt.ExpiredSignatureError:
             return None
